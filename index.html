@@ -2,233 +2,149 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ララァ ―扉の前まで― 第1話</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ララァ 第1話「雨の夜、扉の前で」</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html,body { background:#14100d; color:#f2e9dc; font-family:"Hiragino Mincho ProN","Yu Mincho",serif; }
-  #app { max-width:480px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column; }
-  #stage { position:relative; width:100%; aspect-ratio:9/14; max-height:66dvh; background:#000; overflow:hidden; }
-  #stage img { width:100%; height:100%; object-fit:cover; object-position:50% 18%; display:block; }
-  #titlebox { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding:24px 16px 30px; background:linear-gradient(to top, rgba(10,6,4,.82), rgba(10,6,4,0) 55%); text-align:center; }
-  #titlebox h1 { font-size:26px; letter-spacing:.12em; font-weight:600; margin-bottom:6px; }
-  #titlebox p { font-size:13px; letter-spacing:.3em; color:#d8c6a5; margin-bottom:20px; }
-  #endbox { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding:24px 16px 30px; background:linear-gradient(to top, rgba(10,6,4,.85), rgba(10,6,4,0) 60%); text-align:center; }
-  #endbox h2 { font-size:22px; letter-spacing:.12em; font-weight:600; margin-bottom:6px; }
-  #endbox p { font-size:13px; letter-spacing:.3em; color:#d8c6a5; margin-bottom:20px; }
-  #textbox { padding:16px 18px 8px; min-height:110px; }
-  #who { font-size:13px; letter-spacing:.2em; color:#c9a35f; margin-bottom:4px; min-height:18px; }
-  #text { font-size:17px; line-height:1.9; letter-spacing:.02em; white-space:pre-wrap; }
-  #text.narr { color:#cfc4ae; }
-  #controls { padding:8px 16px 28px; display:flex; flex-direction:column; gap:10px; margin-top:auto; }
-  button { appearance:none; border:1px solid #8a6f4d; background:#241a12; color:#f2e9dc; font-family:inherit; font-size:16px; letter-spacing:.14em; padding:14px 12px; border-radius:8px; cursor:pointer; width:100%; }
-  button:active { background:#3a2a1a; }
-  .cmd { text-align:left; padding-left:22px; }
-  .main { background:#5a3d1e; border-color:#c9a35f; text-align:center; }
-  .hidden { display:none !important; }
+  html,body{margin:0;padding:0;background:#06090f;color:#eef3f8;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;height:100%}
+  #app{max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column}
+  #stage{position:relative;flex:1;overflow:hidden;background:#000}
+  #stage img{width:100%;height:100%;object-fit:cover;display:block}
+  #hud{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);border-radius:10px;padding:6px 10px;font-size:12px;line-height:1.7}
+  #box{background:linear-gradient(180deg,#0b1220,#0e1626);padding:14px 16px calc(14px + env(safe-area-inset-bottom));min-height:132px;box-sizing:border-box}
+  #who{font-size:13px;color:#9fd8ff;margin-bottom:6px}
+  #text{font-size:16px;line-height:1.8;min-height:56px;white-space:pre-wrap}
+  #choices{display:none;flex-direction:column;gap:8px;margin-top:10px}
+  #choices button{background:#1b2a44;color:#eef3f8;border:1px solid #3a5a86;border-radius:10px;padding:12px;font-size:15px;font-family:inherit}
+  #tap{font-size:11px;color:#7d93ad;text-align:right;margin-top:6px}
+  #title{padding:28px 18px;text-align:center}
+  #title h1{font-size:22px;margin:8px 0}
+  #title p{color:#b9c9da;line-height:1.9;font-size:14px}
+  #title button{margin-top:16px;background:#24507e;color:#fff;border:0;border-radius:10px;padding:14px 28px;font-size:16px;font-family:inherit}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="stage">
-    <img id="cut" src="img/kneel.webp" alt="">
-    <div id="titlebox">
-      <h1>ララァ ―扉の前まで―</h1>
-      <p>第 1 話</p>
-      <button id="startbtn" class="main" style="max-width:280px;">はじめる</button>
-    </div>
-    <div id="endbox" class="hidden">
-      <h2>第1話 ―扉の前まで― 了</h2>
-      <p>つづく</p>
-      <button id="restartbtn" class="main" style="max-width:280px;">最初から</button>
-    </div>
-  </div>
-  <div id="textbox" class="hidden">
-    <div id="who"></div>
-    <div id="text"></div>
-  </div>
-  <div id="controls">
-    <div id="cmds" class="hidden" style="display:flex; flex-direction:column; gap:10px;"></div>
-    <button id="nextbtn" class="main hidden">つぎへ</button>
+  <div id="stage" style="display:none"><img id="img" alt=""><div id="hud"></div></div>
+  <div id="box" style="display:none"><div id="who"></div><div id="text"></div><div id="choices"></div><div id="tap">タップで進む</div></div>
+  <div id="title">
+    <p>茶屋の小説より</p>
+    <h1>ララァ 第1話<br>「雨の夜、扉の前で」</h1>
+    <p>地下聖域の番人ララァと、迷い込んだ旅人の一夜。<br>選び方で、彼女の警戒が少しずつ変わります。</p>
+    <button id="start">はじめる</button>
   </div>
 </div>
-
 <script>
-"use strict";
-/* ================= Core (DOM非依存・テスト可能) ================= */
-var GalCore = (function () {
-  function L(img, who, text) { return { k: "line", img: img, who: who, text: text }; }
-  function N(img, text) { return { k: "line", img: img, who: "", text: text }; }
-  function C(options) { return { k: "choice", options: options }; }
-  function O(label, steps, effect) { return { label: label, steps: steps, effect: effect || null }; }
-
-  var SCRIPT = [
-    /* 拍1 泉の洗濯 */
-    N("img/washing.webp", "地下の泉は青く光っていた。彼女はそこで、自分の寝具と衣を洗っている。"),
-    L(null, "ララァ", "……ふんふん♪（鼻歌）……今日はよく光る。水の機嫌がいい"),
-    N(null, "番人の、誰も知らない夕方の暮らし。"),
-    /* 拍2 物音・振り返り（専用カット） */
-    N("img/claw.webp", "石の裏で、音がした。"),
-    L(null, "ララァ", "！（爪を立てて振り返る）……誰。……気配は1つ。逃げも隠れも下手なやつ"),
-    /* 拍3 対峙 */
-    L("img/crawl.webp", "ララァ", "出てきなさい。……ほら、早く"),
-    L(null, "旅人", "（洞窟に迷い込んで……ここが何処か、教えてほしい）"),
-    L("img/sulky.webp", "ララァ", "教える義理は無い。ここは聖域。あたしは番人。無断で入った者は——"),
-    L(null, "旅人", "（腕の傷から血を見せる）"),
-    L("img/crawl.webp", "ララァ", "……怪我。雨に濡れて、怪我して、迷って。最悪の組み合わせで来たね"),
-    C([
-      O("正直に名乗る", [ L(null, "ララァ", "名乗るなら、こっちも名乗る。ララァ。この聖域の番をしてる") ]),
-      O("誤魔化す", [ L(null, "ララァ", "誤魔化す人の目は、泳ぐ。……泳いでるよ、今") ]),
-      O("黙る", [ L(null, "ララァ", "口が重いのは、訳ありか、ただの頑固か。……後者であってほしいな") ])
-    ]),
-    /* 拍4 判断 */
-    L("img/kneel.webp", "ララァ", "追い返すのが、番の決まり"),
-    N(null, "彼女は外の雨音に、少しだけ耳を澄ます。"),
-    L(null, "ララァ", "……でも今日は雨。怪我人を雨に放ったら、死ぬ。……雨が止むまで。ただし、言った場所から動くな。約束できる？"),
-    L(null, "旅人", "（頷く）"),
-    L(null, "ララァ", "よし。……約束、破ったら爪だから"),
-    /* 拍5 介抱 */
-    L(null, "ララァ", "傷、見せて。放っとくと化膿する"),
-    L(null, "旅人", "（袖をまくる）"),
-    L(null, "ララァ", "（顔を近づけて手当て）……深くない。泉の水で洗って、布を巻く"),
-    N(null, "手当ての間、距離はゼロだった。彼女は職務の顔。こっちだけが、意識した。"),
-    L(null, "ララァ", "……何、見てる。あたしは医者の真似事をしてるだけ"),
-    C([
-      O("手当てを受ける", [ L("img/smile.webp", "ララァ", "じっとして。……動くと巻けない") ]),
-      O("自分でやると言う", [ L(null, "ララァ", "意地っ張り。……じゃあ布だけ貸す。ほら") ])
-    ]),
-    /* 拍6 着替えと食事 */
-    L("img/meal.webp", "ララァ", "服、乾かしなさい。濡れたままだと風邪を引く。……あたしはあっち向いてるから"),
-    N(null, "彼女は律儀に背を向けた。ただし、水面に小さく映る気配だけが、静かに揺れている。"),
-    L("img/namaiki.webp", "ララァ", "食事はこれだけ。文句は言わないで"),
-    C([
-      O("外の話をする", [ L(null, "ララァ", "外の食べ物？ ……どんな味がするの。ここの実は酸っぱいだけ") ]),
-      O("黙って食べる", [ L(null, "ララァ", "……無口な食事も、悪くない。聖域はずっと、ひとり飯だったから") ]),
-      O("ポテチを渡す", [ L(null, "ララァ", "何これ。……パリッ。……もう1枚。……袋ごと置いていいよ") ])
-    ]),
-    /* 拍7 夜・寝床 */
-    L("img/pillow.webp", "ララァ", "寝床はあんたに貸す。あたしは泉のそばでいい"),
-    L(null, "旅人", "（番人が、床で寝るのか）"),
-    L(null, "ララァ", "番人は丈夫なの。……それに、あたしは夜の水音が好き"),
-    N(null, "明かりが落ちる。彼女の寝息が、少しだけ聞こえた。"),
-    C([
-      O("見守る", [ L("img/toro.webp", "旅人", "（起こさないよう、静かにする）……") ], "kigen+"),
-      O("話しかける", [ L(null, "ララァ", "……眠い。でも、もう少しだけなら。外の話、聞かせて") ])
-    ]),
-    /* 拍8 朝・扉の前 */
-    N("img/door.webp", "雨が上がった。彼女は扉まで、見送りに来た。"),
-    L(null, "ララァ", "ここから先は、あんたの世界。……もう迷うなよ"),
-    C([
-      O("礼を言う", [ L(null, "ララァ", "……うん。また迷うなら——今度は昼にしなさい。洗濯の手伝い、まだ借りがあるから") ]),
-      O("待つ", [
-        L(null, "旅人", "（しばらく黙って立つ）"),
-        L("img/lookback.webp", "ララァ", "……行かないの。頑固だね、あんたも。……次は、もう少し近くで待っていいよ")
-      ])
-    ]),
-    N(null, "扉は開かなかった。ただし、彼女の爪はもう立っていなかった。——第2話へ")
-  ];
-
-  var S;
-  function reset() {
-    S = {
-      queue: SCRIPT.slice(),
-      cur: null,
-      phase: "title",
-      img: "img/kneel.webp",
-      who: "",
-      text: "",
-      options: null,
-      state: { keikai: 80, kigen: 50, koukan: 0 }
-    };
-  }
-  reset();
-
-  function take() {
-    var st = S.queue.shift();
-    if (!st) {
-      S.phase = "end";
-      S.cur = null;
-      S.options = null;
-      return;
-    }
-    S.cur = st;
-    if (st.img) S.img = st.img;
-    if (st.k === "choice") {
-      S.options = st.options.map(function (o) { return o.label; });
-    } else {
-      S.options = null;
-      S.who = st.who;
-      S.text = st.text;
-    }
-  }
-  function start() {
-    reset();
-    S.phase = "play";
-    take();
-  }
-  function next() {
-    if (S.phase === "play" && S.cur && S.cur.k === "line") take();
-  }
-  function choose(i) {
-    if (S.phase !== "play" || !S.cur || S.cur.k !== "choice") return;
-    var opt = S.cur.options[i];
-    if (!opt) return;
-    if (opt.effect === "kigen+") S.state.kigen += 5;
-    S.queue = opt.steps.concat(S.queue);
-    take();
-  }
-  function view() {
-    return {
-      phase: S.phase,
-      img: S.img,
-      who: S.who,
-      text: S.text,
-      isNarr: S.who === "",
-      options: (S.phase === "play" && S.cur && S.cur.k === "choice") ? S.options : null,
-      showNext: (S.phase === "play" && S.cur && S.cur.k === "line"),
-      state: { keikai: S.state.keikai, kigen: S.state.kigen, koukan: S.state.koukan }
-    };
-  }
-  return { start: start, next: next, choose: choose, view: view };
-})();
-
-/* ================= DOM層 ================= */
-if (typeof document !== "undefined") {
-  var cutEl = document.getElementById("cut");
-  var titleEl = document.getElementById("titlebox");
-  var endEl = document.getElementById("endbox");
-  var boxEl = document.getElementById("textbox");
-  var whoEl = document.getElementById("who");
-  var textEl = document.getElementById("text");
-  var cmdsEl = document.getElementById("cmds");
-  var nextEl = document.getElementById("nextbtn");
-  function render() {
-    var v = GalCore.view();
-    cutEl.src = v.img;
-    titleEl.classList.toggle("hidden", v.phase !== "title");
-    endEl.classList.toggle("hidden", v.phase !== "end");
-    boxEl.classList.toggle("hidden", v.phase === "title");
-    whoEl.textContent = v.who;
-    textEl.textContent = v.text;
-    textEl.classList.toggle("narr", v.isNarr);
-    cmdsEl.innerHTML = "";
-    cmdsEl.classList.toggle("hidden", !v.options);
-    if (v.options) {
-      v.options.forEach(function (label, i) {
-        var b = document.createElement("button");
-        b.className = "cmd";
-        b.textContent = label;
-        b.addEventListener("click", function () { GalCore.choose(i); render(); });
-        cmdsEl.appendChild(b);
-      });
-    }
-    nextEl.classList.toggle("hidden", !v.showNext);
-  }
-  document.getElementById("startbtn").addEventListener("click", function () { GalCore.start(); render(); });
-  document.getElementById("restartbtn").addEventListener("click", function () { GalCore.start(); render(); });
-  nextEl.addEventListener("click", function () { GalCore.next(); render(); });
-  render();
+var S = {keikai:80, kigen:50, kokan:0};
+var steps = [
+ {img:"b1", who:"", text:"地下の泉は青く光っていた。彼女の夕方は、番人の家事でできている——泉の水口の掃除、扉の封の確認、それと洗濯。"},
+ {img:"b1", who:"ララァ", text:"……ふんふん♪ ……今日はよく光る。水の機嫌がいい"},
+ {img:"b1", who:"", text:"番人の、誰も知らない夕方の暮らし。"},
+ {img:"b2", who:"", text:"石の裏で、音がした。"},
+ {img:"b2", who:"ララァ", text:"！ ……誰。……気配は1つ。逃げも隠れも下手なやつ"},
+ {img:"face-base", who:"ララァ", text:"出てきなさい。……ほら、早く"},
+ {img:"face-base", who:"旅人", text:"（洞窟に迷い込んで……ここが何処か、教えてほしい）"},
+ {img:"face-sulky", who:"ララァ", text:"教える義理は無い。ここは聖域。あたしは番人。無断で入った者は——"},
+ {img:"face-sulky", who:"旅人", text:"（腕の傷から、血を見せる）"},
+ {img:"face-base", who:"ララァ", text:"……怪我。雨に濡れて、怪我して、迷って。最悪の組み合わせで来たね"},
+ {choice:[
+   {label:"正直に名乗る", fx:{keikai:-10}, lines:[
+     {who:"ララァ", text:"名乗るなら、こっちも名乗る。ララァ。この聖域の番をしてる"}]},
+   {label:"誤魔化す", fx:{kigen:-5}, lines:[
+     {who:"ララァ", text:"誤魔化す人の目は、泳ぐ。……泳いでるよ、今"}]},
+   {label:"黙る", fx:{}, lines:[
+     {who:"ララァ", text:"口が重いのは、訳ありか、ただの頑固か。……後者であってほしいな"}]}
+ ]},
+ {img:"face-base", who:"ララァ", text:"追い返すのが、番の決まり"},
+ {img:"face-base", who:"", text:"彼女は外の雨音に、少しだけ耳を澄ます。"},
+ {img:"face-base", who:"ララァ", text:"……でも今日は雨。怪我人を雨に放ったら、死ぬ。……雨が止むまで。ただし、言った場所から動くな。約束できる？"},
+ {img:"face-smile", who:"旅人", text:"（頷く）"},
+ {img:"face-smile", who:"ララァ", text:"よし。……約束、破ったら爪だから"},
+ {img:"face-base", who:"ララァ", text:"傷、見せて。放っとくと化膿する"},
+ {img:"face-base", who:"旅人", text:"（袖をまくる）"},
+ {img:"face-base", who:"ララァ", text:"……深くない。泉の水で洗って、布を巻く"},
+ {img:"face-base", who:"", text:"手当ての間、距離はゼロだった。彼女は職務の顔。こっちだけが、意識した。"},
+ {img:"face-sulky", who:"ララァ", text:"……何、見てる。あたしは医者の真似事をしてるだけ"},
+ {choice:[
+   {label:"手当てを受ける", fx:{kokan:5}, lines:[
+     {who:"ララァ", text:"じっとして。……動くと巻けない", img:"face-smile"}]},
+   {label:"自分でやると言う", fx:{kigen:5}, lines:[
+     {who:"ララァ", text:"意地っ張り。……じゃあ布だけ貸す。ほら"}]}
+ ]},
+ {img:"b6", who:"ララァ", text:"服、乾かしなさい。濡れたままだと風邪を引く。……あたしはあっち向いてるから"},
+ {img:"b6", who:"", text:"彼女は律儀に背を向けた。ただし、水面に小さく映る気配だけが、静かに揺れている。"},
+ {img:"face-namaiki", who:"ララァ", text:"食事はこれだけ。文句は言わないで"},
+ {choice:[
+   {label:"外の話をする", fx:{}, lines:[
+     {who:"ララァ", text:"外の食べ物？ ……どんな味がするの。ここの実は酸っぱいだけ", img:"face-base"},
+     {who:"旅人", text:"（持っていたポテチの袋を見せる）", img:"face-base"},
+     {who:"ララァ", text:"何これ。……パリッ。……もう1枚。……袋ごと置いていいよ", img:"face-smile", fx:{kokan:5}}]},
+   {label:"黙って食べる", fx:{}, lines:[
+     {who:"ララァ", text:"……無口な食事も、悪くない。聖域はずっと、ひとり飯だったから", img:"face-smile"}]}
+ ]},
+ {img:"b7", who:"ララァ", text:"寝床はあんたに貸す。あたしは泉のそばでいい"},
+ {img:"b7", who:"旅人", text:"（番人が、床で寝るのか）"},
+ {img:"b7", who:"ララァ", text:"番人は丈夫なの。……それに、あたしは夜の水音が好き"},
+ {img:"b7", who:"", text:"明かりが落ちる。彼女の寝息が、少しだけ聞こえた。"},
+ {choice:[
+   {label:"見守る", fx:{kokan:5}, lines:[
+     {who:"", text:"（起こさないよう、静かにする）", img:"b7t"},
+     {who:"ララァ", text:"……寝息、聞かれてたら恥ずかしい。起きたら忘れて", img:"b7t"}]},
+   {label:"話しかける", fx:{}, lines:[
+     {who:"ララァ", text:"……眠い。でも、もう少しだけなら。外の話、聞かせて"}]}
+ ]},
+ {img:"b8", who:"", text:"雨が上がった。彼女は扉まで、見送りに来た。"},
+ {img:"b8", who:"ララァ", text:"ここから先は、あんたの世界。……もう迷うなよ"},
+ {choice:[
+   {label:"礼を言う", fx:{kokan:5}, lines:[
+     {who:"ララァ", text:"……うん。また迷うなら——今度は昼にしなさい。包帯の巻き直し、まだ残ってるから", img:"b8b"}]},
+   {label:"黙って待つ", fx:{}, lines:[
+     {who:"ララァ", text:"……行かないの。頑固だね、あんたも。……次は、もう少し近くで待っていいよ", img:"b8b"}]}
+ ]},
+ {img:"b8b", who:"", text:"扉は開かなかった。ただし、彼女の爪はもう立っていなかった。——第2話へ"},
+ {img:"b8b", who:"", text:"【第1話 おわり】"}
+];
+var i = -1, busy = false;
+var imgEl = document.getElementById("img"), whoEl = document.getElementById("who"), textEl = document.getElementById("text"),
+    chEl = document.getElementById("choices"), hudEl = document.getElementById("hud");
+function hud(){ hudEl.innerHTML = "警戒 " + S.keikai + "<br>機嫌 " + S.kigen + "<br>好感 " + S.kokan; }
+function show(step){
+  if(step.img) imgEl.src = "img/" + step.img + ".webp";
+  whoEl.textContent = step.who || "";
+  textEl.textContent = step.text || "";
+  hud();
 }
+function applyFx(fx){ if(!fx) return; for(var k in fx){ S[k] += fx[k]; } if(S.keikai<30) S.keikai=30; hud(); }
+function next(){
+  if(busy) return;
+  i++;
+  if(i >= steps.length) return;
+  var st = steps[i];
+  if(st.choice){
+    busy = true;
+    chEl.style.display = "flex"; chEl.innerHTML = "";
+    st.choice.forEach(function(c){
+      var b = document.createElement("button"); b.textContent = c.label;
+      b.onclick = function(ev){
+        ev.stopPropagation(); applyFx(c.fx); chEl.style.display = "none";
+        var lines = c.lines.slice();
+        steps.splice.apply(steps, [i+1, 0].concat(lines.map(function(L){ return {img:L.img||null, who:L.who, text:L.text, fx:L.fx}; })));
+        busy = false; next();
+      };
+      chEl.appendChild(b);
+    });
+    textEl.textContent = "（どうする？）"; whoEl.textContent = "";
+    return;
+  }
+  applyFx(st.fx); show(st);
+}
+document.getElementById("box").addEventListener("click", next);
+document.getElementById("stage").addEventListener("click", next);
+document.getElementById("start").addEventListener("click", function(){
+  document.getElementById("title").style.display = "none";
+  document.getElementById("stage").style.display = "block";
+  document.getElementById("box").style.display = "block";
+  next();
+});
 </script>
 </body>
 </html>
