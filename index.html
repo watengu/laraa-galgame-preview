@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ララァ ―扉の前まで―</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { background:#14100d; color:#f2e9dc; font-family:"Hiragino Mincho ProN","Yu Mincho",serif; }
+  #app { max-width:480px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column; }
+  #stage { position:relative; width:100%; aspect-ratio:9/14; max-height:66dvh; background:#000; overflow:hidden; }
+  #stage img { width:100%; height:100%; object-fit:cover; object-position:50% 18%; display:block; }
+  #titlebox { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding:24px 16px 30px; background:linear-gradient(to top, rgba(10,6,4,.82), rgba(10,6,4,0) 55%); text-align:center; }
+  #titlebox h1 { font-size:26px; letter-spacing:.12em; font-weight:600; margin-bottom:6px; }
+  #titlebox p { font-size:13px; letter-spacing:.3em; color:#d8c6a5; margin-bottom:20px; }
+  #textbox { padding:16px 18px 8px; min-height:96px; font-size:17px; line-height:1.9; letter-spacing:.02em; white-space:pre-wrap; }
+  #controls { padding:8px 16px 28px; display:flex; flex-direction:column; gap:10px; margin-top:auto; }
+  button { appearance:none; border:1px solid #8a6f4d; background:#241a12; color:#f2e9dc; font-family:inherit; font-size:16px; letter-spacing:.14em; padding:14px 12px; border-radius:8px; cursor:pointer; width:100%; }
+  button:active { background:#3a2a1a; }
+  .cmd { text-align:left; padding-left:22px; }
+  .main { background:#5a3d1e; border-color:#c9a35f; text-align:center; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <img id="cut" src="img/kneel.webp" alt="">
+    <div id="titlebox">
+      <h1>ララァ ―扉の前まで―</h1>
+      <p>第 1 話</p>
+      <button id="startbtn" class="main" style="max-width:280px;">はじめる</button>
+    </div>
+  </div>
+  <div id="textbox" class="hidden"></div>
+  <div id="controls">
+    <div id="cmds" class="hidden" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <button id="nextbtn" class="main hidden">つぎへ</button>
+    <button id="restartbtn" class="hidden">最初から</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ================= Core (DOM非依存・テスト可能) ================= */
+var GalCore = (function () {
+  var TEXT = {
+    s1_intro: "……誰。ここは、人の来る場所じゃない",
+    s1_hanasu: "姿を見せずに話すの。……まあ、近づくよりはマシ",
+    s1_miru: "じっと見ないで。あたしは番人。見世物じゃない",
+    s1_chikazuku: "来ないで！ ……それ以上は、ダメ",
+    s2_intro: "名乗って。番の決まり",
+    s2_hanasu: "……ふうん。その名、覚えた。あたしはララァ。この聖域の番をしてる",
+    s2_miru: "まだ見てる。……変な人",
+    s2_damaru: "言えないなら、帰れば。扉はあっち",
+    s3_intro: "見ないでって言ったのに。……洗濯の邪魔",
+    s3_tetsudau: "え、触るの？ ……ありがと。重いから、助かる",
+    s3_hanasu: "話しながらでも手は動く。……何の話？",
+    s3_miru1: "……",
+    s3_miru2: "もう見たでしょ。……ほんとに変な人",
+    s4_intro: "座るなら、そこ。あたしの場所はこっち",
+    s4_chikazuku_ok: "……隣、いいよ。少しだけ",
+    s4_chikazuku_ng: "ダメ。まだ、あんたを信じてない",
+    s4_hanasu: "外の話、聞かせて。……聖域は、ずっと静かだから",
+    s4_miru: "食べてる所まで見なくていい",
+    s5_intro: "……眠い。番人は、夜に弱いんだ",
+    s5_mimamoru: "起こさないで、いてくれるの。……じゃあ、少しだけ寝る",
+    s5_hanasu: "もう少し、話して。声、悪くないから",
+    s5_miru: "寝顔はダメ。……起きてる時だけ",
+    s6_intro: "ここが扉。あたしが守ってる場所",
+    s6_hanasu: "開け方は、教えない。……まだ、ね",
+    s6_chikazuku: "触らないで。扉は、あたしより頑固",
+    s6_matsu: "……待つんだ。あんたも、なかなか頑固だね",
+    end_line: "第1話 ―扉の前まで― 了",
+    end_sub: "つづく"
+  };
+  var SCENES = [
+    { id: 1, base: "img/cave.webp", intro: TEXT.s1_intro, commands: ["はなす", "みる", "近づく"] },
+    { id: 2, base: "img/cave.webp", intro: TEXT.s2_intro, commands: ["はなす", "みる", "黙る"] },
+    { id: 3, base: "img/washing.webp", intro: TEXT.s3_intro, commands: ["はなす", "みる", "手伝う"] },
+    { id: 4, base: "img/spring.webp", intro: TEXT.s4_intro, commands: ["はなす", "みる", "近づく"] },
+    { id: 5, base: "img/pillow.webp", intro: TEXT.s5_intro, commands: ["はなす", "みる", "見守る"] },
+    { id: 6, base: "img/cave-toro.webp", intro: TEXT.s6_intro, commands: ["はなす", "近づく", "待つ"] }
+  ];
+  var S;
+  function reset() {
+    S = { keikai: 80, kigen: 50, koukan: 0, idx: 0, phase: "title", img: "img/kneel.webp", text: "", miru3: 0, endKind: null };
+  }
+  reset();
+  function clampKeikai() { if (S.keikai < 30) S.keikai = 30; }
+  function scene() { return SCENES[S.idx]; }
+  function start() {
+    reset();
+    S.phase = "intro";
+    S.img = scene().base;
+    S.text = scene().intro;
+  }
+  function advance() {
+    if (S.phase === "intro") { S.phase = "command"; return; }
+    if (S.phase === "response") {
+      if (S.idx >= SCENES.length - 1) {
+        S.phase = "end";
+        S.img = (S.endKind === "smile") ? "img/smile-toro.webp" : "img/cave-toro.webp";
+        S.text = TEXT.end_line + "\n" + TEXT.end_sub;
+        return;
+      }
+      S.idx += 1;
+      S.miru3 = 0;
+      S.phase = "intro";
+      S.img = scene().base;
+      S.text = scene().intro;
+    }
+  }
+  function respond(line, img) {
+    S.text = line;
+    if (img) S.img = img;
+    S.phase = "response";
+  }
+  function choose(cmd) {
+    if (S.phase !== "command") return;
+    var id = scene().id;
+    if (id === 1) {
+      if (cmd === "はなす") { S.keikai -= 10; respond(TEXT.s1_hanasu); }
+      else if (cmd === "みる") { respond(TEXT.s1_miru); }
+      else if (cmd === "近づく") { S.keikai += 10; respond(TEXT.s1_chikazuku); }
+    } else if (id === 2) {
+      if (cmd === "はなす") { S.koukan += 5; S.keikai -= 10; respond(TEXT.s2_hanasu); }
+      else if (cmd === "みる") { respond(TEXT.s2_miru); }
+      else if (cmd === "黙る") { S.kigen -= 5; respond(TEXT.s2_damaru, "img/face-sulky.webp"); }
+    } else if (id === 3) {
+      if (cmd === "手伝う") { S.koukan += 10; S.keikai -= 10; respond(TEXT.s3_tetsudau); }
+      else if (cmd === "はなす") { S.keikai -= 5; respond(TEXT.s3_hanasu); }
+      else if (cmd === "みる") {
+        S.miru3 += 1;
+        if (S.miru3 === 1) {
+          S.text = TEXT.s3_miru1;
+          S.img = "img/spring.webp";
+          /* phaseはcommandのまま（連打可能） */
+        } else {
+          S.kigen -= 10;
+          respond(TEXT.s3_miru2, "img/face-sulky.webp");
+        }
+      }
+    } else if (id === 4) {
+      if (cmd === "近づく") {
+        if (S.keikai <= 50) { respond(TEXT.s4_chikazuku_ok, "img/face-smile.webp"); }
+        else { respond(TEXT.s4_chikazuku_ng, "img/face-namaiki.webp"); }
+      }
+      else if (cmd === "はなす") { respond(TEXT.s4_hanasu, "img/face-smile.webp"); }
+      else if (cmd === "みる") { respond(TEXT.s4_miru, "img/face-namaiki.webp"); }
+    } else if (id === 5) {
+      if (cmd === "見守る") { S.koukan += 10; respond(TEXT.s5_mimamoru, "img/toro-pillow.webp"); }
+      else if (cmd === "はなす") { respond(TEXT.s5_hanasu); }
+      else if (cmd === "みる") { respond(TEXT.s5_miru); }
+    } else if (id === 6) {
+      if (cmd === "待つ") { S.endKind = "smile"; respond(TEXT.s6_matsu, "img/smile-toro.webp"); }
+      else if (cmd === "はなす") { respond(TEXT.s6_hanasu); }
+      else if (cmd === "近づく") { respond(TEXT.s6_chikazuku); }
+    }
+    clampKeikai();
+  }
+  function view() {
+    return {
+      phase: S.phase,
+      img: S.img,
+      text: S.text,
+      commands: (S.phase === "command") ? scene().commands.slice() : [],
+      showNext: (S.phase === "intro" || S.phase === "response"),
+      showRestart: (S.phase === "end"),
+      state: { keikai: S.keikai, kigen: S.kigen, koukan: S.koukan, sceneId: scene() ? scene().id : null }
+    };
+  }
+  return { start: start, advance: advance, choose: choose, view: view, TEXT: TEXT };
+})();
+
+/* ================= DOM層 ================= */
+if (typeof document !== "undefined") {
+  var cutEl = document.getElementById("cut");
+  var titleEl = document.getElementById("titlebox");
+  var textEl = document.getElementById("textbox");
+  var cmdsEl = document.getElementById("cmds");
+  var nextEl = document.getElementById("nextbtn");
+  var restartEl = document.getElementById("restartbtn");
+  function render() {
+    var v = GalCore.view();
+    cutEl.src = v.img;
+    titleEl.classList.toggle("hidden", v.phase !== "title");
+    textEl.classList.toggle("hidden", v.phase === "title");
+    textEl.textContent = v.text;
+    cmdsEl.innerHTML = "";
+    cmdsEl.classList.toggle("hidden", v.commands.length === 0);
+    v.commands.forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "cmd";
+      b.textContent = c;
+      b.addEventListener("click", function () { GalCore.choose(c); render(); });
+      cmdsEl.appendChild(b);
+    });
+    nextEl.classList.toggle("hidden", !v.showNext);
+    restartEl.classList.toggle("hidden", !v.showRestart);
+  }
+  document.getElementById("startbtn").addEventListener("click", function () { GalCore.start(); render(); });
+  nextEl.addEventListener("click", function () { GalCore.advance(); render(); });
+  restartEl.addEventListener("click", function () { GalCore.start(); render(); });
+  render();
+}
+</script>
+</body>
+</html>
