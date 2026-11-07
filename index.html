@@ -3,148 +3,208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ララァ 第1話「雨の夜、扉の前で」</title>
+<title>聖域の番人ララァ 第1話 ― 嵐の夜の客</title>
 <style>
-  html,body{margin:0;padding:0;background:#06090f;color:#eef3f8;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;height:100%}
-  #app{max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column}
-  #stage{position:relative;flex:1;overflow:hidden;background:#000}
-  #stage img{width:100%;height:100%;object-fit:cover;display:block}
-  #hud{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);border-radius:10px;padding:6px 10px;font-size:12px;line-height:1.7}
-  #box{background:linear-gradient(180deg,#0b1220,#0e1626);padding:14px 16px calc(14px + env(safe-area-inset-bottom));min-height:132px;box-sizing:border-box}
-  #who{font-size:13px;color:#9fd8ff;margin-bottom:6px}
-  #text{font-size:16px;line-height:1.8;min-height:56px;white-space:pre-wrap}
-  #choices{display:none;flex-direction:column;gap:8px;margin-top:10px}
-  #choices button{background:#1b2a44;color:#eef3f8;border:1px solid #3a5a86;border-radius:10px;padding:12px;font-size:15px;font-family:inherit}
-  #tap{font-size:11px;color:#7d93ad;text-align:right;margin-top:6px}
-  #title{padding:28px 18px;text-align:center}
-  #title h1{font-size:22px;margin:8px 0}
-  #title p{color:#b9c9da;line-height:1.9;font-size:14px}
-  #title button{margin-top:16px;background:#24507e;color:#fff;border:0;border-radius:10px;padding:14px 28px;font-size:16px;font-family:inherit}
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:#06090c; color:#e8e2d4; font-family:"Hiragino Mincho ProN","Yu Mincho",serif; }
+  #app { position:relative; width:100%; height:100dvh; overflow:hidden; }
+  #bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 22%; transition:opacity .35s; }
+  #shade { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.82) 88%); }
+  #hud { position:absolute; top:calc(8px + env(safe-area-inset-top)); left:10px; right:10px; display:flex; gap:6px; z-index:5; }
+  .chip { flex:1; background:rgba(8,14,18,.66); border:1px solid rgba(140,220,255,.35); border-radius:999px; padding:5px 4px; text-align:center; font-size:12px; letter-spacing:.06em; backdrop-filter:blur(3px); }
+  .chip b { color:#9fe3ff; font-size:14px; }
+  #box { position:absolute; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:6; background:rgba(5,10,14,.78); border:1px solid rgba(232,226,212,.25); border-radius:12px; padding:14px 16px 12px; min-height:118px; backdrop-filter:blur(4px); cursor:pointer; }
+  #who { color:#ffd98a; font-size:13px; letter-spacing:.14em; margin-bottom:6px; min-height:16px; }
+  #text { font-size:16.5px; line-height:1.75; min-height:58px; white-space:pre-wrap; }
+  #next { text-align:right; color:#9fe3ff; font-size:11px; letter-spacing:.2em; animation:blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:.25} 50%{opacity:1} }
+  #choices { position:absolute; left:16px; right:16px; bottom:190px; z-index:7; display:none; flex-direction:column; gap:10px; }
+  .choice { background:rgba(10,20,28,.92); border:1px solid rgba(159,227,255,.55); color:#eaf6ff; border-radius:10px; padding:13px 14px; font-size:15.5px; text-align:center; cursor:pointer; font-family:inherit; }
+  .choice:active { background:rgba(38,80,105,.95); }
+  #title, #end { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; justify-content:flex-end; }
+  #title img, #end img.bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+  #title .panel, #end .panel { position:relative; background:linear-gradient(to top, rgba(3,6,9,.92) 55%, rgba(3,6,9,0)); padding:70px 22px calc(26px + env(safe-area-inset-bottom)); text-align:center; }
+  h1 { font-size:25px; letter-spacing:.12em; color:#f4ecd9; text-shadow:0 2px 12px #000; }
+  .sub { margin-top:8px; font-size:13.5px; color:#bcd8e6; letter-spacing:.08em; }
+  .btn { margin-top:20px; display:inline-block; background:rgba(12,26,36,.9); border:1px solid #9fe3ff; color:#eaf6ff; padding:13px 42px; border-radius:999px; font-size:16px; letter-spacing:.18em; cursor:pointer; font-family:inherit; }
+  #end { display:none; }
+  .stats { font-size:14px; line-height:2; color:#d8e8f0; }
+  .stats b { color:#ffd98a; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="stage" style="display:none"><img id="img" alt=""><div id="hud"></div></div>
-  <div id="box" style="display:none"><div id="who"></div><div id="text"></div><div id="choices"></div><div id="tap">タップで進む</div></div>
+  <img id="bg" src="img/b1.jpg" alt="">
+  <div id="shade"></div>
+  <div id="hud">
+    <div class="chip">警戒 <b id="h-alert">80</b></div>
+    <div class="chip">機嫌 <b id="h-mood">50</b></div>
+    <div class="chip">好感 <b id="h-love">0</b></div>
+  </div>
+  <div id="choices"></div>
+  <div id="box">
+    <div id="who"></div>
+    <div id="text"></div>
+    <div id="next">▼ TAP</div>
+  </div>
   <div id="title">
-    <p>茶屋の小説より</p>
-    <h1>ララァ 第1話<br>「雨の夜、扉の前で」</h1>
-    <p>地下聖域の番人ララァと、迷い込んだ旅人の一夜。<br>選び方で、彼女の警戒が少しずつ変わります。</p>
-    <button id="start">はじめる</button>
+    <img src="img/top.webp" alt="">
+    <div class="panel">
+      <h1>聖域の番人ララァ</h1>
+      <div class="sub">第1話 ― 嵐の夜の客</div>
+      <button class="btn" id="start">はじめる</button>
+    </div>
+  </div>
+  <div id="end">
+    <img class="bg" src="img/b8.jpg" alt="">
+    <div class="panel">
+      <h1>第1話 おわり</h1>
+      <div class="stats" id="endstats"></div>
+      <div class="sub">扉の向こうで、彼女は待つことを覚えた。――第2話へ</div>
+      <button class="btn" id="again">もう一度</button>
+    </div>
   </div>
 </div>
 <script>
-var S = {keikai:80, kigen:50, kokan:0};
-var steps = [
- {img:"b1", who:"", text:"地下の泉は青く光っていた。彼女の夕方は、番人の家事でできている——泉の水口の掃除、扉の封の確認、それと洗濯。"},
- {img:"b1", who:"ララァ", text:"……ふんふん♪ ……今日はよく光る。水の機嫌がいい"},
- {img:"b1", who:"", text:"番人の、誰も知らない夕方の暮らし。"},
- {img:"b2", who:"", text:"石の裏で、音がした。"},
- {img:"b2", who:"ララァ", text:"！ ……誰。……気配は1つ。逃げも隠れも下手なやつ"},
- {img:"face-base", who:"ララァ", text:"出てきなさい。……ほら、早く"},
- {img:"face-base", who:"旅人", text:"（洞窟に迷い込んで……ここが何処か、教えてほしい）"},
- {img:"face-sulky", who:"ララァ", text:"教える義理は無い。ここは聖域。あたしは番人。無断で入った者は——"},
- {img:"face-sulky", who:"旅人", text:"（腕の傷から、血を見せる）"},
- {img:"face-base", who:"ララァ", text:"……怪我。雨に濡れて、怪我して、迷って。最悪の組み合わせで来たね"},
- {choice:[
-   {label:"正直に名乗る", fx:{keikai:-10}, lines:[
-     {who:"ララァ", text:"名乗るなら、こっちも名乗る。ララァ。この聖域の番をしてる"}]},
-   {label:"誤魔化す", fx:{kigen:-5}, lines:[
-     {who:"ララァ", text:"誤魔化す人の目は、泳ぐ。……泳いでるよ、今"}]},
-   {label:"黙る", fx:{}, lines:[
-     {who:"ララァ", text:"口が重いのは、訳ありか、ただの頑固か。……後者であってほしいな"}]}
- ]},
- {img:"face-base", who:"ララァ", text:"追い返すのが、番の決まり"},
- {img:"face-base", who:"", text:"彼女は外の雨音に、少しだけ耳を澄ます。"},
- {img:"face-base", who:"ララァ", text:"……でも今日は雨。怪我人を雨に放ったら、死ぬ。……雨が止むまで。ただし、言った場所から動くな。約束できる？"},
- {img:"face-smile", who:"旅人", text:"（頷く）"},
- {img:"face-smile", who:"ララァ", text:"よし。……約束、破ったら爪だから"},
- {img:"face-base", who:"ララァ", text:"傷、見せて。放っとくと化膿する"},
- {img:"face-base", who:"旅人", text:"（袖をまくる）"},
- {img:"face-base", who:"ララァ", text:"……深くない。泉の水で洗って、布を巻く"},
- {img:"face-base", who:"", text:"手当ての間、距離はゼロだった。彼女は職務の顔。こっちだけが、意識した。"},
- {img:"face-sulky", who:"ララァ", text:"……何、見てる。あたしは医者の真似事をしてるだけ"},
- {choice:[
-   {label:"手当てを受ける", fx:{kokan:5}, lines:[
-     {who:"ララァ", text:"じっとして。……動くと巻けない", img:"face-smile"}]},
-   {label:"自分でやると言う", fx:{kigen:5}, lines:[
-     {who:"ララァ", text:"意地っ張り。……じゃあ布だけ貸す。ほら"}]}
- ]},
- {img:"b6", who:"ララァ", text:"服、乾かしなさい。濡れたままだと風邪を引く。……あたしはあっち向いてるから"},
- {img:"b6", who:"", text:"彼女は律儀に背を向けた。ただし、水面に小さく映る気配だけが、静かに揺れている。"},
- {img:"face-namaiki", who:"ララァ", text:"食事はこれだけ。文句は言わないで"},
- {choice:[
-   {label:"外の話をする", fx:{}, lines:[
-     {who:"ララァ", text:"外の食べ物？ ……どんな味がするの。ここの実は酸っぱいだけ", img:"face-base"},
-     {who:"旅人", text:"（持っていたポテチの袋を見せる）", img:"face-base"},
-     {who:"ララァ", text:"何これ。……パリッ。……もう1枚。……袋ごと置いていいよ", img:"face-smile", fx:{kokan:5}}]},
-   {label:"黙って食べる", fx:{}, lines:[
-     {who:"ララァ", text:"……無口な食事も、悪くない。聖域はずっと、ひとり飯だったから", img:"face-smile"}]}
- ]},
- {img:"b7", who:"ララァ", text:"寝床はあんたに貸す。あたしは泉のそばでいい"},
- {img:"b7", who:"旅人", text:"（番人が、床で寝るのか）"},
- {img:"b7", who:"ララァ", text:"番人は丈夫なの。……それに、あたしは夜の水音が好き"},
- {img:"b7", who:"", text:"明かりが落ちる。彼女の寝息が、少しだけ聞こえた。"},
- {choice:[
-   {label:"見守る", fx:{kokan:5}, lines:[
-     {who:"", text:"（起こさないよう、静かにする）", img:"b7t"},
-     {who:"ララァ", text:"……寝息、聞かれてたら恥ずかしい。起きたら忘れて", img:"b7t"}]},
-   {label:"話しかける", fx:{}, lines:[
-     {who:"ララァ", text:"……眠い。でも、もう少しだけなら。外の話、聞かせて"}]}
- ]},
- {img:"b8", who:"", text:"雨が上がった。彼女は扉まで、見送りに来た。"},
- {img:"b8", who:"ララァ", text:"ここから先は、あんたの世界。……もう迷うなよ"},
- {choice:[
-   {label:"礼を言う", fx:{kokan:5}, lines:[
-     {who:"ララァ", text:"……うん。また迷うなら——今度は昼にしなさい。包帯の巻き直し、まだ残ってるから", img:"b8b"}]},
-   {label:"黙って待つ", fx:{}, lines:[
-     {who:"ララァ", text:"……行かないの。頑固だね、あんたも。……次は、もう少し近くで待っていいよ", img:"b8b"}]}
- ]},
- {img:"b8b", who:"", text:"扉は開かなかった。ただし、彼女の爪はもう立っていなかった。——第2話へ"},
- {img:"b8b", who:"", text:"【第1話 おわり】"}
-];
-var i = -1, busy = false;
-var imgEl = document.getElementById("img"), whoEl = document.getElementById("who"), textEl = document.getElementById("text"),
-    chEl = document.getElementById("choices"), hudEl = document.getElementById("hud");
-function hud(){ hudEl.innerHTML = "警戒 " + S.keikai + "<br>機嫌 " + S.kigen + "<br>好感 " + S.kokan; }
-function show(step){
-  if(step.img) imgEl.src = "img/" + step.img + ".webp";
-  whoEl.textContent = step.who || "";
-  textEl.textContent = step.text || "";
+var S = { alert: 80, mood: 50, love: 0 };
+function fx(d) {
+  if (!d) return;
+  if (d.alert) S.alert = Math.max(30, S.alert + d.alert);
+  if (d.mood) S.mood = Math.max(0, Math.min(100, S.mood + d.mood));
+  if (d.love) S.love = Math.max(0, S.love + d.love);
   hud();
 }
-function applyFx(fx){ if(!fx) return; for(var k in fx){ S[k] += fx[k]; } if(S.keikai<30) S.keikai=30; hud(); }
-function next(){
-  if(busy) return;
-  i++;
-  if(i >= steps.length) return;
-  var st = steps[i];
-  if(st.choice){
-    busy = true;
-    chEl.style.display = "flex"; chEl.innerHTML = "";
-    st.choice.forEach(function(c){
-      var b = document.createElement("button"); b.textContent = c.label;
-      b.onclick = function(ev){
-        ev.stopPropagation(); applyFx(c.fx); chEl.style.display = "none";
-        var lines = c.lines.slice();
-        steps.splice.apply(steps, [i+1, 0].concat(lines.map(function(L){ return {img:L.img||null, who:L.who, text:L.text, fx:L.fx}; })));
-        busy = false; next();
-      };
-      chEl.appendChild(b);
-    });
-    textEl.textContent = "（どうする？）"; whoEl.textContent = "";
-    return;
-  }
-  applyFx(st.fx); show(st);
+function hud() {
+  document.getElementById('h-alert').textContent = S.alert;
+  document.getElementById('h-mood').textContent = S.mood;
+  document.getElementById('h-love').textContent = S.love;
 }
-document.getElementById("box").addEventListener("click", next);
-document.getElementById("stage").addEventListener("click", next);
-document.getElementById("start").addEventListener("click", function(){
-  document.getElementById("title").style.display = "none";
-  document.getElementById("stage").style.display = "block";
-  document.getElementById("box").style.display = "block";
-  next();
-});
+var N = 'ララァ', T = '旅人', G = '';
+var script = [
+ {img:'b1.jpg', who:G, text:'雨の音。石の冷たさ。……目を開けたら、顔があった。'},
+ {img:'b1.jpg', who:N, text:'……動くな。あんた、誰', fx:{alert:-5}},
+ {img:'b1.jpg', who:T, text:'（ここは……？）'},
+ {img:'b1.jpg', who:N, text:'答えるのは、あんたの方。ここは聖域。扉の前で倒れてたのを、引きずり込んだのはあたし'},
+ {img:'b1.jpg', who:T, text:'（助けて、くれたのか）'},
+ {img:'b1.jpg', who:N, text:'違う。掟。……まず名乗りなさい'},
+ {img:'face-base.webp', who:N, text:'この場所は、隠されてる。見つかること自体が、おかしいの'},
+ {img:'face-base.webp', who:T, text:'（山で雨に遭って、灯りもなくて……石の扉だけが見えた）'},
+ {img:'face-sulky.webp', who:N, text:'扉は、見える者には見えないはず。……あんた、何者？'},
+ {choice:[
+   {label:'正直に名乗る', jump:'b2a', fx:{alert:-10}},
+   {label:'誤魔化す', jump:'b2b', fx:{alert:5, mood:-5}},
+   {label:'黙る', jump:'b2c', fx:{alert:-5}}
+ ]},
+ {id:'b2a', img:'face-smile.webp', who:N, text:'……ふうん。目が泳いでない。本当の名前だ', jump:'b2end'},
+ {id:'b2b', img:'face-sulky.webp', who:N, text:'誤魔化す人の目は泳ぐ。……泳いでるよ、今', jump:'b2end'},
+ {id:'b2c', img:'face-base.webp', who:N, text:'言えないなら、言える範囲でいい。……出身は？'},
+ {img:'face-base.webp', who:T, text:'（答える）'},
+ {img:'face-base.webp', who:N, text:'……まあ、いい'},
+ {id:'b2end', img:'face-base.webp', who:N, text:'あたしはララァ。サキュバスで、この聖域の番人。今は、番の身'},
+ {img:'b3.jpg', who:N, text:'掟を言う。「嵐の夜に敷居を越えた者は、夜明けまで客」。だから今夜、あんたは客'},
+ {img:'b3.jpg', who:T, text:'（客……）'},
+ {img:'b3.jpg', who:N, text:'条件は2つ。勝手に歩き回らない。泉と祭壇には、近づかない'},
+ {img:'b3.jpg', who:T, text:'（泉？）'},
+ {img:'face-base.webp', who:N, text:'光る水。あれは聖域の心臓。……客でも、触れれば爪だから'},
+ {img:'b4.webp', who:N, text:'条件を呑むなら、夜明けまで置く。嫌なら、今からでも雨へ出なさい'},
+ {choice:[
+   {label:'泊まる', jump:'b4a', fx:{alert:-5}},
+   {label:'雨へ出る', jump:'b4b'}
+ ]},
+ {id:'b4a', img:'face-smile.webp', who:N, text:'賢い。……じゃあ、まず傷を見せて', jump:'b5'},
+ {id:'b4b', img:'b4.webp', who:T, text:'（立ち上がり、ふらつく）'},
+ {img:'face-sulky.webp', who:N, text:'（袖を掴む）……見なさい、その足。3歩で倒れる。意地は、治ってから張りなさい'},
+ {id:'b5', img:'b5a.jpg', who:N, text:'傷、洗うよ。泉の水はダメ。……雨水を溜めた方で'},
+ {img:'b5a.jpg', who:G, text:'彼女は自分の袖をまくった。脇のラインが、作業の動きの中で自然に覗いた。'},
+ {img:'b5b.jpg', who:N, text:'腕、出して。……そう。次、包帯。あたしが前から巻くから、動かないで', fx:{alert:-10}},
+ {img:'b5b.jpg', who:G, text:'彼女は身を寄せて布を回す。縫い目の線が、寄る動きに合わせて描かれた。視線が一度だけ合って、彼女の方が先に逸らした。'},
+ {img:'b5c.jpg', who:T, text:'（袖をまくる。立ち上がりかけ、ふらつく）'},
+ {img:'b5c.jpg', who:G, text:'倒れかけた体を、彼女が支えた。顔が、近かった。', fx:{alert:5}},
+ {img:'b5c.jpg', who:N, text:'……っ。ほら、言ったでしょ。3歩で倒れるって'},
+ {img:'b5c.jpg', who:T, text:'（すまない）'},
+ {img:'face-base.webp', who:N, text:'（距離を取り直す）……手当て、続ける。じっとして'},
+ {choice:[
+   {label:'手当てを受ける', jump:'b5a2', fx:{alert:-5, love:3}},
+   {label:'自分でやると言う', jump:'b5b2', fx:{mood:-3}}
+ ]},
+ {id:'b5a2', img:'face-base.webp', who:N, text:'……動くと巻けない', jump:'b6'},
+ {id:'b5b2', img:'face-namaiki.webp', who:N, text:'意地っ張り。……布だけ貸す。巻き方は、見て覚えなさい'},
+ {id:'b6', img:'b6.jpg', who:N, text:'食事。あたしのは質素。文句は言わないで'},
+ {img:'b6.jpg', who:T, text:'（携行食の袋を差し出す）'},
+ {img:'b6b.webp', who:N, text:'何これ。……パリッ。……もう1枚。外の食べ物って、こんな味なの', fx:{love:5, mood:5}},
+ {img:'b6.jpg', who:T, text:'（外の話を聞かれるままに話す）'},
+ {img:'b6.jpg', who:N, text:'……外は、賑やかなんだ。ここはずっと静か。静かなのは、好き。……でも今日は、少しだけ煩いくらいがいい'},
+ {choice:[
+   {label:'外の話をする', jump:'b6a', fx:{love:5, mood:5}},
+   {label:'黙って食べる', jump:'b6b', fx:{mood:3}}
+ ]},
+ {id:'b6a', img:'face-smile.webp', who:N, text:'もっと聞かせて。市場の話。……人が集まる場所の話', jump:'b7'},
+ {id:'b6b', img:'face-base.webp', who:N, text:'無口な食事も、悪くない。……ひとり飯よりは'},
+ {id:'b7', img:'b7a.webp', who:G, text:'夜。彼女は封の見回りに立つ。眠れない彼は、それを見ている。'},
+ {img:'b7a.webp', who:N, text:'眠れないの。……客が来たのは、何年ぶりかな'},
+ {img:'b7b.jpg', who:T, text:'（ずっと一人だったのか）'},
+ {img:'b7b.jpg', who:N, text:'番人は一人。決まりだから。……慣れてる'},
+ {img:'b7b.jpg', who:T, text:'（慣れている顔には、見えなかった）'},
+ {img:'b7c.webp', who:G, text:'見回りから戻った彼女は、いつもの距離ではなく、寝床の近くの石に座った。本人も、気づいていないふりをした。', fx:{alert:-10}},
+ {img:'b7c.webp', who:N, text:'……黙って見守るなら、朝まで付き合う。話すなら、短く'},
+ {choice:[
+   {label:'見守る', jump:'b7a2', fx:{love:3, mood:3}},
+   {label:'話しかける', jump:'b7b2', fx:{alert:-5, love:3}}
+ ]},
+ {id:'b7a2', img:'b7c.webp', who:N, text:'……寝息は聞かせない。でも、いるのは分かる', jump:'b8'},
+ {id:'b7b2', img:'b7c.webp', who:N, text:'外の夜の話、聞かせて。……月は、どっちから昇る？'},
+ {id:'b8', img:'b8.jpg', who:G, text:'夜明け。雨は上がった。扉の前で彼女は、番人の仕事着に戻っていた。'},
+ {img:'b8.jpg', who:N, text:'夜明け。客は、ここまで'},
+ {img:'b8.jpg', who:T, text:'（世話になった）'},
+ {img:'b8.jpg', who:N, text:'（小さな石の欠片を渡す）……目印。もし、また敷居を越えることがあったら、これを見せなさい。……番人が、少しは優しく出迎える'},
+ {choice:[
+   {label:'戻る約束をする', jump:'b8a', fx:{love:10}},
+   {label:'約束しない', jump:'b8b'}
+ ]},
+ {id:'b8a', img:'face-smile.webp', who:N, text:'約束は、破るな。……あたし、待つのは慣れてる。でも、待たせた分は取り立てるから', jump:'fin'},
+ {id:'b8b', img:'face-base.webp', who:N, text:'……うん。それが正しい。聖域は、来る場所じゃない。……でも、石は持っていきなさい'},
+ {id:'fin', img:'b8.jpg', who:G, text:'扉が閉まる。最後に見た彼女の顔は、昨夜と少しだけ違った。――第2話へ', end:true}
+];
+var idx = 0, idmap = {};
+script.forEach(function(s, i){ if (s.id) idmap[s.id] = i; });
+var bg = document.getElementById('bg'), who = document.getElementById('who'),
+    txt = document.getElementById('text'), box = document.getElementById('box'),
+    ch = document.getElementById('choices'), curImg = '';
+function show(i) {
+  var s = script[i];
+  if (!s) return finish();
+  if (s.choice) { renderChoice(s); return; }
+  ch.style.display = 'none';
+  if (s.img && s.img !== curImg) { curImg = s.img; bg.style.opacity = 0; setTimeout(function(){ bg.src = 'img/' + s.img; bg.onload = function(){ bg.style.opacity = 1; }; }, 180); }
+  who.textContent = s.who || '';
+  txt.textContent = s.text || '';
+  if (s.fx) fx(s.fx);
+  if (s.end) { box.onclick = finish; return; }
+  if (s.jump) { box.onclick = function(){ show(idmap[s.jump]); }; return; }
+  box.onclick = function(){ show(i + 1); };
+}
+function renderChoice(s) {
+  ch.innerHTML = '';
+  s.choice.forEach(function(o) {
+    var b = document.createElement('button');
+    b.className = 'choice'; b.textContent = o.label;
+    b.onclick = function(ev){ ev.stopPropagation(); if (o.fx) fx(o.fx); show(idmap[o.jump]); };
+    ch.appendChild(b);
+  });
+  ch.style.display = 'flex';
+  who.textContent = ''; txt.textContent = '―― どうする？';
+  box.onclick = null;
+}
+function finish() {
+  document.getElementById('endstats').innerHTML =
+    '警戒 <b>' + S.alert + '</b>（80から、ここまで解けた）<br>機嫌 <b>' + S.mood + '</b> ／ 好感 <b>' + S.love + '</b>';
+  document.getElementById('end').style.display = 'flex';
+}
+document.getElementById('start').onclick = function() {
+  document.getElementById('title').style.display = 'none';
+  hud(); show(0);
+};
+document.getElementById('again').onclick = function() { location.reload(); };
 </script>
 </body>
 </html>
