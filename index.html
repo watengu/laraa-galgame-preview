@@ -26,7 +26,7 @@
   #title .panel, #end .panel { position:relative; background:linear-gradient(to top, rgba(3,6,9,.92) 55%, rgba(3,6,9,0)); padding:70px 22px calc(26px + env(safe-area-inset-bottom)); text-align:center; }
   h1 { font-size:25px; letter-spacing:.12em; color:#f4ecd9; text-shadow:0 2px 12px #000; }
   .sub { margin-top:8px; font-size:13.5px; color:#bcd8e6; letter-spacing:.08em; }
-  .btn { margin-top:20px; display:inline-block; background:rgba(12,26,36,.9); border:1px solid #9fe3ff; color:#eaf6ff; padding:13px 42px; border-radius:999px; font-size:16px; letter-spacing:.18em; cursor:pointer; font-family:inherit; }
+  .btn { margin-top:14px; display:inline-block; background:rgba(12,26,36,.9); border:1px solid #9fe3ff; color:#eaf6ff; padding:13px 30px; border-radius:999px; font-size:15.5px; letter-spacing:.1em; cursor:pointer; font-family:inherit; }
   #end { display:none; }
   .stats { font-size:14px; line-height:2; color:#d8e8f0; }
   .stats b { color:#ffd98a; }
@@ -52,11 +52,13 @@
     <div class="panel">
       <h1>聖域の番人ララァ</h1>
       <div class="sub">第1話 ― 嵐の夜の客</div>
-      <button class="btn" id="start">はじめる</button>
+      <div class="sub">衣装パターンを選んでください</div>
+      <button class="btn" id="startA">パターンA ― 前結びニット＋ショーツ</button>
+      <button class="btn" id="startB">パターンB ― 短ニット＋ロングデニム</button>
     </div>
   </div>
   <div id="end">
-    <img class="bg" src="img/b8.jpg" alt="">
+    <img class="bg" src="img/b8g.jpg" alt="">
     <div class="panel">
       <h1>第1話 おわり</h1>
       <div class="stats" id="endstats"></div>
@@ -66,7 +68,7 @@
   </div>
 </div>
 <script>
-var S = { alert: 80, mood: 50, love: 0 };
+var S = { alert: 80, mood: 50, love: 0 }, P = 'a';
 function fx(d) {
   if (!d) return;
   if (d.alert) S.alert = Math.max(30, S.alert + d.alert);
@@ -112,16 +114,16 @@ var script = [
    {label:'雨へ出る', jump:'b4b'}
  ]},
  {id:'b4a', img:'face-smile.webp', who:N, text:'賢い。……じゃあ、まず傷を見せて', jump:'b5'},
- {id:'b4b', img:'b4.webp', who:T, text:'（立ち上がり、ふらつく）'},
- {img:'face-sulky.webp', who:N, text:'（袖を掴む）……見なさい、その足。3歩で倒れる。意地は、治ってから張りなさい'},
- {id:'b5', img:'b5a.jpg', who:N, text:'傷、洗うよ。泉の水はダメ。……雨水を溜めた方で'},
- {img:'b5a.jpg', who:G, text:'彼女は自分の袖をまくった。脇のラインが、作業の動きの中で自然に覗いた。'},
- {img:'b5b.jpg', who:N, text:'腕、出して。……そう。次、包帯。あたしが前から巻くから、動かないで', fx:{alert:-10}},
- {img:'b5b.jpg', who:G, text:'彼女は身を寄せて布を回す。縫い目の線が、寄る動きに合わせて描かれた。視線が一度だけ合って、彼女の方が先に逸らした。'},
- {img:'b5c.jpg', who:T, text:'（袖をまくる。立ち上がりかけ、ふらつく）'},
- {img:'b5c.jpg', who:G, text:'倒れかけた体を、彼女が支えた。顔が、近かった。', fx:{alert:5}},
- {img:'b5c.jpg', who:N, text:'……っ。ほら、言ったでしょ。3歩で倒れるって'},
- {img:'b5c.jpg', who:T, text:'（すまない）'},
+ {id:'b4b', img:'b4h.webp', who:T, text:'（立ち上がり、ふらつく）'},
+ {img:'b4h.webp', who:N, text:'（袖を掴む）……見なさい、その足。3歩で倒れる。意地は、治ってから張りなさい'},
+ {id:'b5', img:'P5a', who:N, text:'傷、洗うよ。泉の水はダメ。……雨水を溜めた方で'},
+ {img:'P5a', who:G, text:'彼女は自分の袖をまくった。脇のラインが、作業の動きの中で自然に覗いた。'},
+ {img:'b5b.webp', who:N, text:'腕、出して。……そう。次、包帯。あたしが前から巻くから、動かないで', fx:{alert:-10}},
+ {img:'b5b.webp', who:G, text:'彼女は身を寄せて布を回す。縫い目の線が、寄る動きに合わせて描かれた。視線が一度だけ合って、彼女の方が先に逸らした。'},
+ {img:'P5c', who:T, text:'（立ち上がりかけ、ふらつく）'},
+ {img:'P5c', who:G, text:'倒れかけた所を、彼女の手が支えた。顔が、近かった。', fx:{alert:5}},
+ {img:'P5c', who:N, text:'……っ。ほら、言ったでしょ。3歩で倒れるって'},
+ {img:'P5c', who:T, text:'（すまない）'},
  {img:'face-base.webp', who:N, text:'（距離を取り直す）……手当て、続ける。じっとして'},
  {choice:[
    {label:'手当てを受ける', jump:'b5a2', fx:{alert:-5, love:3}},
@@ -129,22 +131,22 @@ var script = [
  ]},
  {id:'b5a2', img:'face-base.webp', who:N, text:'……動くと巻けない', jump:'b6'},
  {id:'b5b2', img:'face-namaiki.webp', who:N, text:'意地っ張り。……布だけ貸す。巻き方は、見て覚えなさい'},
- {id:'b6', img:'b6.jpg', who:N, text:'食事。あたしのは質素。文句は言わないで'},
- {img:'b6.jpg', who:T, text:'（携行食の袋を差し出す）'},
+ {id:'b6', img:'P6', who:N, text:'食事。あたしのは質素。文句は言わないで'},
+ {img:'P6', who:T, text:'（携行食の袋を差し出す）'},
  {img:'b6b.webp', who:N, text:'何これ。……パリッ。……もう1枚。外の食べ物って、こんな味なの', fx:{love:5, mood:5}},
- {img:'b6.jpg', who:T, text:'（外の話を聞かれるままに話す）'},
- {img:'b6.jpg', who:N, text:'……外は、賑やかなんだ。ここはずっと静か。静かなのは、好き。……でも今日は、少しだけ煩いくらいがいい'},
+ {img:'P6', who:T, text:'（外の話を聞かれるままに話す）'},
+ {img:'P6', who:N, text:'……外は、賑やかなんだ。ここはずっと静か。静かなのは、好き。……でも今日は、少しだけ煩いくらいがいい'},
  {choice:[
    {label:'外の話をする', jump:'b6a', fx:{love:5, mood:5}},
    {label:'黙って食べる', jump:'b6b', fx:{mood:3}}
  ]},
  {id:'b6a', img:'face-smile.webp', who:N, text:'もっと聞かせて。市場の話。……人が集まる場所の話', jump:'b7'},
  {id:'b6b', img:'face-base.webp', who:N, text:'無口な食事も、悪くない。……ひとり飯よりは'},
- {id:'b7', img:'b7a.webp', who:G, text:'夜。彼女は封の見回りに立つ。眠れない彼は、それを見ている。'},
- {img:'b7a.webp', who:N, text:'眠れないの。……客が来たのは、何年ぶりかな'},
- {img:'b7b.jpg', who:T, text:'（ずっと一人だったのか）'},
- {img:'b7b.jpg', who:N, text:'番人は一人。決まりだから。……慣れてる'},
- {img:'b7b.jpg', who:T, text:'（慣れている顔には、見えなかった）'},
+ {id:'b7', img:'P7a', who:G, text:'夜。彼女は封の見回りに立つ。眠れない彼は、それを見ている。'},
+ {img:'P7a', who:N, text:'眠れないの。……客が来たのは、何年ぶりかな'},
+ {img:'P7b', who:T, text:'（ずっと一人だったのか）'},
+ {img:'P7b', who:N, text:'番人は一人。決まりだから。……慣れてる'},
+ {img:'P7b', who:T, text:'（慣れている顔には、見えなかった）'},
  {img:'b7c.webp', who:G, text:'見回りから戻った彼女は、いつもの距離ではなく、寝床の近くの石に座った。本人も、気づいていないふりをした。', fx:{alert:-10}},
  {img:'b7c.webp', who:N, text:'……黙って見守るなら、朝まで付き合う。話すなら、短く'},
  {choice:[
@@ -153,10 +155,10 @@ var script = [
  ]},
  {id:'b7a2', img:'b7c.webp', who:N, text:'……寝息は聞かせない。でも、いるのは分かる', jump:'b8'},
  {id:'b7b2', img:'b7c.webp', who:N, text:'外の夜の話、聞かせて。……月は、どっちから昇る？'},
- {id:'b8', img:'b8.jpg', who:G, text:'夜明け。雨は上がった。扉の前で彼女は、番人の仕事着に戻っていた。'},
- {img:'b8.jpg', who:N, text:'夜明け。客は、ここまで'},
- {img:'b8.jpg', who:T, text:'（世話になった）'},
- {img:'b8.jpg', who:N, text:'（小さな石の欠片を渡す）……目印。もし、また敷居を越えることがあったら、これを見せなさい。……番人が、少しは優しく出迎える'},
+ {id:'b8', img:'b8g.jpg', who:G, text:'夜明け。雨は上がった。扉の前で彼女は、番人の仕事着に戻っていた。'},
+ {img:'b8g.jpg', who:N, text:'夜明け。客は、ここまで'},
+ {img:'b8g.jpg', who:T, text:'（世話になった）'},
+ {img:'b8g.jpg', who:N, text:'（小さな石の欠片を渡す）……目印。もし、また敷居を越えることがあったら、これを見せなさい。……番人が、少しは優しく出迎える'},
  {choice:[
    {label:'戻る約束をする', jump:'b8a', fx:{love:10}},
    {label:'約束しない', jump:'b8b'}
@@ -165,17 +167,20 @@ var script = [
  {id:'b8b', img:'face-base.webp', who:N, text:'……うん。それが正しい。聖域は、来る場所じゃない。……でも、石は持っていきなさい'},
  {id:'fin', img:'b8.jpg', who:G, text:'扉が閉まる。最後に見た彼女の顔は、昨夜と少しだけ違った。――第2話へ', end:true}
 ];
-var idx = 0, idmap = {};
+var idmap = {};
 script.forEach(function(s, i){ if (s.id) idmap[s.id] = i; });
 var bg = document.getElementById('bg'), who = document.getElementById('who'),
     txt = document.getElementById('text'), box = document.getElementById('box'),
     ch = document.getElementById('choices'), curImg = '';
+var EXT = {a5a:'webp', b5a:'jpg', a5c:'webp', b5c:'webp', a6:'webp', b6:'jpg', a7a:'webp', b7a:'jpg', a7b:'jpg', b7b:'jpg'};
+function resolveImg(name) { var n = name.charAt(0) === 'P' ? P + name.slice(1) : name; return n.indexOf('.') < 0 ? n + '.' + EXT[n] : n; }
 function show(i) {
   var s = script[i];
   if (!s) return finish();
   if (s.choice) { renderChoice(s); return; }
   ch.style.display = 'none';
-  if (s.img && s.img !== curImg) { curImg = s.img; bg.style.opacity = 0; setTimeout(function(){ bg.src = 'img/' + s.img; bg.onload = function(){ bg.style.opacity = 1; }; }, 180); }
+  var img = s.img ? resolveImg(s.img) : '';
+  if (img && img !== curImg) { curImg = img; bg.style.opacity = 0; setTimeout(function(){ bg.src = 'img/' + img; bg.onload = function(){ bg.style.opacity = 1; }; }, 180); }
   who.textContent = s.who || '';
   txt.textContent = s.text || '';
   if (s.fx) fx(s.fx);
@@ -200,10 +205,13 @@ function finish() {
     '警戒 <b>' + S.alert + '</b>（80から、ここまで解けた）<br>機嫌 <b>' + S.mood + '</b> ／ 好感 <b>' + S.love + '</b>';
   document.getElementById('end').style.display = 'flex';
 }
-document.getElementById('start').onclick = function() {
+function start(p) {
+  P = p;
   document.getElementById('title').style.display = 'none';
   hud(); show(0);
-};
+}
+document.getElementById('startA').onclick = function(){ start('a'); };
+document.getElementById('startB').onclick = function(){ start('b'); };
 document.getElementById('again').onclick = function() { location.reload(); };
 </script>
 </body>
