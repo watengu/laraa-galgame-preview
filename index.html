@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ララァ ―扉の前まで―</title>
+<title>ララァ ―扉の前まで― 第1話</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body { background:#14100d; color:#f2e9dc; font-family:"Hiragino Mincho ProN","Yu Mincho",serif; }
@@ -13,7 +13,13 @@
   #titlebox { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding:24px 16px 30px; background:linear-gradient(to top, rgba(10,6,4,.82), rgba(10,6,4,0) 55%); text-align:center; }
   #titlebox h1 { font-size:26px; letter-spacing:.12em; font-weight:600; margin-bottom:6px; }
   #titlebox p { font-size:13px; letter-spacing:.3em; color:#d8c6a5; margin-bottom:20px; }
-  #textbox { padding:16px 18px 8px; min-height:96px; font-size:17px; line-height:1.9; letter-spacing:.02em; white-space:pre-wrap; }
+  #endbox { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding:24px 16px 30px; background:linear-gradient(to top, rgba(10,6,4,.85), rgba(10,6,4,0) 60%); text-align:center; }
+  #endbox h2 { font-size:22px; letter-spacing:.12em; font-weight:600; margin-bottom:6px; }
+  #endbox p { font-size:13px; letter-spacing:.3em; color:#d8c6a5; margin-bottom:20px; }
+  #textbox { padding:16px 18px 8px; min-height:110px; }
+  #who { font-size:13px; letter-spacing:.2em; color:#c9a35f; margin-bottom:4px; min-height:18px; }
+  #text { font-size:17px; line-height:1.9; letter-spacing:.02em; white-space:pre-wrap; }
+  #text.narr { color:#cfc4ae; }
   #controls { padding:8px 16px 28px; display:flex; flex-direction:column; gap:10px; margin-top:auto; }
   button { appearance:none; border:1px solid #8a6f4d; background:#241a12; color:#f2e9dc; font-family:inherit; font-size:16px; letter-spacing:.14em; padding:14px 12px; border-radius:8px; cursor:pointer; width:100%; }
   button:active { background:#3a2a1a; }
@@ -31,12 +37,19 @@
       <p>第 1 話</p>
       <button id="startbtn" class="main" style="max-width:280px;">はじめる</button>
     </div>
+    <div id="endbox" class="hidden">
+      <h2>第1話 ―扉の前まで― 了</h2>
+      <p>つづく</p>
+      <button id="restartbtn" class="main" style="max-width:280px;">最初から</button>
+    </div>
   </div>
-  <div id="textbox" class="hidden"></div>
+  <div id="textbox" class="hidden">
+    <div id="who"></div>
+    <div id="text"></div>
+  </div>
   <div id="controls">
     <div id="cmds" class="hidden" style="display:flex; flex-direction:column; gap:10px;"></div>
     <button id="nextbtn" class="main hidden">つぎへ</button>
-    <button id="restartbtn" class="hidden">最初から</button>
   </div>
 </div>
 
@@ -44,164 +57,176 @@
 "use strict";
 /* ================= Core (DOM非依存・テスト可能) ================= */
 var GalCore = (function () {
-  var TEXT = {
-    s1_intro: "……誰。ここは、人の来る場所じゃない",
-    s1_hanasu: "姿を見せずに話すの。……まあ、近づくよりはマシ",
-    s1_miru: "じっと見ないで。あたしは番人。見世物じゃない",
-    s1_chikazuku: "来ないで！ ……それ以上は、ダメ",
-    s2_intro: "名乗って。番の決まり",
-    s2_hanasu: "……ふうん。その名、覚えた。あたしはララァ。この聖域の番をしてる",
-    s2_miru: "まだ見てる。……変な人",
-    s2_damaru: "言えないなら、帰れば。扉はあっち",
-    s3_intro: "見ないでって言ったのに。……洗濯の邪魔",
-    s3_tetsudau: "え、触るの？ ……ありがと。重いから、助かる",
-    s3_hanasu: "話しながらでも手は動く。……何の話？",
-    s3_miru1: "……",
-    s3_miru2: "もう見たでしょ。……ほんとに変な人",
-    s4_intro: "座るなら、そこ。あたしの場所はこっち",
-    s4_chikazuku_ok: "……隣、いいよ。少しだけ",
-    s4_chikazuku_ng: "ダメ。まだ、あんたを信じてない",
-    s4_hanasu: "外の話、聞かせて。……聖域は、ずっと静かだから",
-    s4_miru: "食べてる所まで見なくていい",
-    s5_intro: "……眠い。番人は、夜に弱いんだ",
-    s5_mimamoru: "起こさないで、いてくれるの。……じゃあ、少しだけ寝る",
-    s5_hanasu: "もう少し、話して。声、悪くないから",
-    s5_miru: "寝顔はダメ。……起きてる時だけ",
-    s6_intro: "ここが扉。あたしが守ってる場所",
-    s6_hanasu: "開け方は、教えない。……まだ、ね",
-    s6_chikazuku: "触らないで。扉は、あたしより頑固",
-    s6_matsu: "……待つんだ。あんたも、なかなか頑固だね",
-    end_line: "第1話 ―扉の前まで― 了",
-    end_sub: "つづく"
-  };
-  var SCENES = [
-    { id: 1, base: "img/cave.webp", intro: TEXT.s1_intro, commands: ["はなす", "みる", "近づく"] },
-    { id: 2, base: "img/cave.webp", intro: TEXT.s2_intro, commands: ["はなす", "みる", "黙る"] },
-    { id: 3, base: "img/washing.webp", intro: TEXT.s3_intro, commands: ["はなす", "みる", "手伝う"] },
-    { id: 4, base: "img/spring.webp", intro: TEXT.s4_intro, commands: ["はなす", "みる", "近づく"] },
-    { id: 5, base: "img/pillow.webp", intro: TEXT.s5_intro, commands: ["はなす", "みる", "見守る"] },
-    { id: 6, base: "img/cave-toro.webp", intro: TEXT.s6_intro, commands: ["はなす", "近づく", "待つ"] }
+  function L(img, who, text) { return { k: "line", img: img, who: who, text: text }; }
+  function N(img, text) { return { k: "line", img: img, who: "", text: text }; }
+  function C(options) { return { k: "choice", options: options }; }
+  function O(label, steps, effect) { return { label: label, steps: steps, effect: effect || null }; }
+
+  var SCRIPT = [
+    /* 拍1 泉の洗濯 */
+    N("img/washing.webp", "地下の泉は青く光っていた。彼女はそこで、自分の寝具と衣を洗っている。"),
+    L(null, "ララァ", "……ふんふん♪（鼻歌）……今日はよく光る。水の機嫌がいい"),
+    N(null, "番人の、誰も知らない夕方の暮らし。"),
+    /* 拍2 物音・振り返り（専用カット） */
+    N("img/claw.webp", "石の裏で、音がした。"),
+    L(null, "ララァ", "！（爪を立てて振り返る）……誰。……気配は1つ。逃げも隠れも下手なやつ"),
+    /* 拍3 対峙 */
+    L("img/crawl.webp", "ララァ", "出てきなさい。……ほら、早く"),
+    L(null, "旅人", "（洞窟に迷い込んで……ここが何処か、教えてほしい）"),
+    L("img/sulky.webp", "ララァ", "教える義理は無い。ここは聖域。あたしは番人。無断で入った者は——"),
+    L(null, "旅人", "（腕の傷から血を見せる）"),
+    L("img/crawl.webp", "ララァ", "……怪我。雨に濡れて、怪我して、迷って。最悪の組み合わせで来たね"),
+    C([
+      O("正直に名乗る", [ L(null, "ララァ", "名乗るなら、こっちも名乗る。ララァ。この聖域の番をしてる") ]),
+      O("誤魔化す", [ L(null, "ララァ", "誤魔化す人の目は、泳ぐ。……泳いでるよ、今") ]),
+      O("黙る", [ L(null, "ララァ", "口が重いのは、訳ありか、ただの頑固か。……後者であってほしいな") ])
+    ]),
+    /* 拍4 判断 */
+    L("img/kneel.webp", "ララァ", "追い返すのが、番の決まり"),
+    N(null, "彼女は外の雨音に、少しだけ耳を澄ます。"),
+    L(null, "ララァ", "……でも今日は雨。怪我人を雨に放ったら、死ぬ。……雨が止むまで。ただし、言った場所から動くな。約束できる？"),
+    L(null, "旅人", "（頷く）"),
+    L(null, "ララァ", "よし。……約束、破ったら爪だから"),
+    /* 拍5 介抱 */
+    L(null, "ララァ", "傷、見せて。放っとくと化膿する"),
+    L(null, "旅人", "（袖をまくる）"),
+    L(null, "ララァ", "（顔を近づけて手当て）……深くない。泉の水で洗って、布を巻く"),
+    N(null, "手当ての間、距離はゼロだった。彼女は職務の顔。こっちだけが、意識した。"),
+    L(null, "ララァ", "……何、見てる。あたしは医者の真似事をしてるだけ"),
+    C([
+      O("手当てを受ける", [ L("img/smile.webp", "ララァ", "じっとして。……動くと巻けない") ]),
+      O("自分でやると言う", [ L(null, "ララァ", "意地っ張り。……じゃあ布だけ貸す。ほら") ])
+    ]),
+    /* 拍6 着替えと食事 */
+    L("img/meal.webp", "ララァ", "服、乾かしなさい。濡れたままだと風邪を引く。……あたしはあっち向いてるから"),
+    N(null, "彼女は律儀に背を向けた。ただし、水面に小さく映る気配だけが、静かに揺れている。"),
+    L("img/namaiki.webp", "ララァ", "食事はこれだけ。文句は言わないで"),
+    C([
+      O("外の話をする", [ L(null, "ララァ", "外の食べ物？ ……どんな味がするの。ここの実は酸っぱいだけ") ]),
+      O("黙って食べる", [ L(null, "ララァ", "……無口な食事も、悪くない。聖域はずっと、ひとり飯だったから") ]),
+      O("ポテチを渡す", [ L(null, "ララァ", "何これ。……パリッ。……もう1枚。……袋ごと置いていいよ") ])
+    ]),
+    /* 拍7 夜・寝床 */
+    L("img/pillow.webp", "ララァ", "寝床はあんたに貸す。あたしは泉のそばでいい"),
+    L(null, "旅人", "（番人が、床で寝るのか）"),
+    L(null, "ララァ", "番人は丈夫なの。……それに、あたしは夜の水音が好き"),
+    N(null, "明かりが落ちる。彼女の寝息が、少しだけ聞こえた。"),
+    C([
+      O("見守る", [ L("img/toro.webp", "旅人", "（起こさないよう、静かにする）……") ], "kigen+"),
+      O("話しかける", [ L(null, "ララァ", "……眠い。でも、もう少しだけなら。外の話、聞かせて") ])
+    ]),
+    /* 拍8 朝・扉の前 */
+    N("img/door.webp", "雨が上がった。彼女は扉まで、見送りに来た。"),
+    L(null, "ララァ", "ここから先は、あんたの世界。……もう迷うなよ"),
+    C([
+      O("礼を言う", [ L(null, "ララァ", "……うん。また迷うなら——今度は昼にしなさい。洗濯の手伝い、まだ借りがあるから") ]),
+      O("待つ", [
+        L(null, "旅人", "（しばらく黙って立つ）"),
+        L("img/lookback.webp", "ララァ", "……行かないの。頑固だね、あんたも。……次は、もう少し近くで待っていいよ")
+      ])
+    ]),
+    N(null, "扉は開かなかった。ただし、彼女の爪はもう立っていなかった。——第2話へ")
   ];
+
   var S;
   function reset() {
-    S = { keikai: 80, kigen: 50, koukan: 0, idx: 0, phase: "title", img: "img/kneel.webp", text: "", miru3: 0, endKind: null };
+    S = {
+      queue: SCRIPT.slice(),
+      cur: null,
+      phase: "title",
+      img: "img/kneel.webp",
+      who: "",
+      text: "",
+      options: null,
+      state: { keikai: 80, kigen: 50, koukan: 0 }
+    };
   }
   reset();
-  function clampKeikai() { if (S.keikai < 30) S.keikai = 30; }
-  function scene() { return SCENES[S.idx]; }
+
+  function take() {
+    var st = S.queue.shift();
+    if (!st) {
+      S.phase = "end";
+      S.cur = null;
+      S.options = null;
+      return;
+    }
+    S.cur = st;
+    if (st.img) S.img = st.img;
+    if (st.k === "choice") {
+      S.options = st.options.map(function (o) { return o.label; });
+    } else {
+      S.options = null;
+      S.who = st.who;
+      S.text = st.text;
+    }
+  }
   function start() {
     reset();
-    S.phase = "intro";
-    S.img = scene().base;
-    S.text = scene().intro;
+    S.phase = "play";
+    take();
   }
-  function advance() {
-    if (S.phase === "intro") { S.phase = "command"; return; }
-    if (S.phase === "response") {
-      if (S.idx >= SCENES.length - 1) {
-        S.phase = "end";
-        S.img = (S.endKind === "smile") ? "img/smile-toro.webp" : "img/cave-toro.webp";
-        S.text = TEXT.end_line + "\n" + TEXT.end_sub;
-        return;
-      }
-      S.idx += 1;
-      S.miru3 = 0;
-      S.phase = "intro";
-      S.img = scene().base;
-      S.text = scene().intro;
-    }
+  function next() {
+    if (S.phase === "play" && S.cur && S.cur.k === "line") take();
   }
-  function respond(line, img) {
-    S.text = line;
-    if (img) S.img = img;
-    S.phase = "response";
-  }
-  function choose(cmd) {
-    if (S.phase !== "command") return;
-    var id = scene().id;
-    if (id === 1) {
-      if (cmd === "はなす") { S.keikai -= 10; respond(TEXT.s1_hanasu); }
-      else if (cmd === "みる") { respond(TEXT.s1_miru); }
-      else if (cmd === "近づく") { S.keikai += 10; respond(TEXT.s1_chikazuku); }
-    } else if (id === 2) {
-      if (cmd === "はなす") { S.koukan += 5; S.keikai -= 10; respond(TEXT.s2_hanasu); }
-      else if (cmd === "みる") { respond(TEXT.s2_miru); }
-      else if (cmd === "黙る") { S.kigen -= 5; respond(TEXT.s2_damaru, "img/face-sulky.webp"); }
-    } else if (id === 3) {
-      if (cmd === "手伝う") { S.koukan += 10; S.keikai -= 10; respond(TEXT.s3_tetsudau); }
-      else if (cmd === "はなす") { S.keikai -= 5; respond(TEXT.s3_hanasu); }
-      else if (cmd === "みる") {
-        S.miru3 += 1;
-        if (S.miru3 === 1) {
-          S.text = TEXT.s3_miru1;
-          S.img = "img/spring.webp";
-          /* phaseはcommandのまま（連打可能） */
-        } else {
-          S.kigen -= 10;
-          respond(TEXT.s3_miru2, "img/face-sulky.webp");
-        }
-      }
-    } else if (id === 4) {
-      if (cmd === "近づく") {
-        if (S.keikai <= 50) { respond(TEXT.s4_chikazuku_ok, "img/face-smile.webp"); }
-        else { respond(TEXT.s4_chikazuku_ng, "img/face-namaiki.webp"); }
-      }
-      else if (cmd === "はなす") { respond(TEXT.s4_hanasu, "img/face-smile.webp"); }
-      else if (cmd === "みる") { respond(TEXT.s4_miru, "img/face-namaiki.webp"); }
-    } else if (id === 5) {
-      if (cmd === "見守る") { S.koukan += 10; respond(TEXT.s5_mimamoru, "img/toro-pillow.webp"); }
-      else if (cmd === "はなす") { respond(TEXT.s5_hanasu); }
-      else if (cmd === "みる") { respond(TEXT.s5_miru); }
-    } else if (id === 6) {
-      if (cmd === "待つ") { S.endKind = "smile"; respond(TEXT.s6_matsu, "img/smile-toro.webp"); }
-      else if (cmd === "はなす") { respond(TEXT.s6_hanasu); }
-      else if (cmd === "近づく") { respond(TEXT.s6_chikazuku); }
-    }
-    clampKeikai();
+  function choose(i) {
+    if (S.phase !== "play" || !S.cur || S.cur.k !== "choice") return;
+    var opt = S.cur.options[i];
+    if (!opt) return;
+    if (opt.effect === "kigen+") S.state.kigen += 5;
+    S.queue = opt.steps.concat(S.queue);
+    take();
   }
   function view() {
     return {
       phase: S.phase,
       img: S.img,
+      who: S.who,
       text: S.text,
-      commands: (S.phase === "command") ? scene().commands.slice() : [],
-      showNext: (S.phase === "intro" || S.phase === "response"),
-      showRestart: (S.phase === "end"),
-      state: { keikai: S.keikai, kigen: S.kigen, koukan: S.koukan, sceneId: scene() ? scene().id : null }
+      isNarr: S.who === "",
+      options: (S.phase === "play" && S.cur && S.cur.k === "choice") ? S.options : null,
+      showNext: (S.phase === "play" && S.cur && S.cur.k === "line"),
+      state: { keikai: S.state.keikai, kigen: S.state.kigen, koukan: S.state.koukan }
     };
   }
-  return { start: start, advance: advance, choose: choose, view: view, TEXT: TEXT };
+  return { start: start, next: next, choose: choose, view: view };
 })();
 
 /* ================= DOM層 ================= */
 if (typeof document !== "undefined") {
   var cutEl = document.getElementById("cut");
   var titleEl = document.getElementById("titlebox");
-  var textEl = document.getElementById("textbox");
+  var endEl = document.getElementById("endbox");
+  var boxEl = document.getElementById("textbox");
+  var whoEl = document.getElementById("who");
+  var textEl = document.getElementById("text");
   var cmdsEl = document.getElementById("cmds");
   var nextEl = document.getElementById("nextbtn");
-  var restartEl = document.getElementById("restartbtn");
   function render() {
     var v = GalCore.view();
     cutEl.src = v.img;
     titleEl.classList.toggle("hidden", v.phase !== "title");
-    textEl.classList.toggle("hidden", v.phase === "title");
+    endEl.classList.toggle("hidden", v.phase !== "end");
+    boxEl.classList.toggle("hidden", v.phase === "title");
+    whoEl.textContent = v.who;
     textEl.textContent = v.text;
+    textEl.classList.toggle("narr", v.isNarr);
     cmdsEl.innerHTML = "";
-    cmdsEl.classList.toggle("hidden", v.commands.length === 0);
-    v.commands.forEach(function (c) {
-      var b = document.createElement("button");
-      b.className = "cmd";
-      b.textContent = c;
-      b.addEventListener("click", function () { GalCore.choose(c); render(); });
-      cmdsEl.appendChild(b);
-    });
+    cmdsEl.classList.toggle("hidden", !v.options);
+    if (v.options) {
+      v.options.forEach(function (label, i) {
+        var b = document.createElement("button");
+        b.className = "cmd";
+        b.textContent = label;
+        b.addEventListener("click", function () { GalCore.choose(i); render(); });
+        cmdsEl.appendChild(b);
+      });
+    }
     nextEl.classList.toggle("hidden", !v.showNext);
-    restartEl.classList.toggle("hidden", !v.showRestart);
   }
   document.getElementById("startbtn").addEventListener("click", function () { GalCore.start(); render(); });
-  nextEl.addEventListener("click", function () { GalCore.advance(); render(); });
-  restartEl.addEventListener("click", function () { GalCore.start(); render(); });
+  document.getElementById("restartbtn").addEventListener("click", function () { GalCore.start(); render(); });
+  nextEl.addEventListener("click", function () { GalCore.next(); render(); });
   render();
 }
 </script>
